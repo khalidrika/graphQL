@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
-    <title>Login Animation</title>
+    <title>GraphQl</title>
 </head>
 
 <body>
@@ -76,31 +76,28 @@
             </div>
         </div>
 
-        <div class="login">
+        <form class="login">
             <label>
-                <div class="fa fa-phone"></div>
-                <input class="username" type="text" autocomplete="on" placeholder="Email or username">
+                <!-- <div class="fa fa-phone"></div> -->
+                <input name="identifier" class="username" type="text" autocomplete="on" placeholder="Email or username">
             </label>
             <label>
-                <div class="fa fa-commenting"></div>
-                <input class="password" type="password" autocomplete="off" placeholder="password">
+                <!-- <div class="fa fa-commenting"></div> -->
+                <input name="password" class="password" type="password" autocomplete="off" placeholder="password">
                 <button class="password-button">Show password</button>
             </label>
-            <button class="login-button">login</button>
-        </div>
+            <button class="login-button" type="submit">login</button>
+        </form>
 
         <div class="social-buttons">
             <div class="social">
                 <div class="fa fa-paw"></div>
             </div>
         </div>
-
-        <a href="https://dribbble.com/shots/4485321-Login-Page-Homepage" class="inspiration" target="_blank"
-            rel="noopener">
-        </a>
     </div>
 
-    <script src="../js /login.js"></script>
+    <script src="../js/login.js"></script>
+    <script src="../js/main.js"></script>
 </body>
 
 </html>
