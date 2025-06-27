@@ -18,13 +18,18 @@ async function login() {
                 },
             })
 
-            const data = await response.json();
-            console.log(data);
-            localStorage.setItem("jwt", data);
+            if (!response.ok) {
+                alert("Invalid credentials. please try again.");
+                return;
+            }
+
+            const jwt = (await response.text()).slice(1, length-1);
+            console.log(jwt);
+            localStorage.setItem("jwt", jwt);
+            window.location.href = "profile.html"
         })
-    } catch {
-        console.log("err");
+    } catch (err) {
+        console.log("login error:", err);
+        alert("An error occurred. Please try again.");
     }
 }
-
-const xpQuery = ``
