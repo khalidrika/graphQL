@@ -11,59 +11,75 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   fetchUserData(jwt);
-  const groupedSkills = groupSkills(data.user[0].transactions);
-  renderSkills(groupedSkills);
-
-
 });
 
-async function fetchUserData(jwt) {
-  const query = `
-  {
+const QUERIES = {
+  PROFILE: `{
     user {
       firstName
       lastName
-      transactions(where: { type: { _like: "skill%" } }) {
+      auditRatio
+      audits_aggregate(where: { closureType: { _eq: succeeded } }) {
+        aggregate { count }
+      }
+      failed_audits: audits_aggregate(where: { closureType: { _eq: failed } }) {
+        aggregate { count }
+      }
+      transactions(where: { type: { _like: "skill_%" } }) {
         type
         amount
       }
     }
+
     transaction(
       where: {
-        type: { _eq: "xp" },
-        path: { _nlike: "%checkpoint%" },
-        event: { object: { name: { _eq: "Module" } } }
+        _and: [
+          { type: { _eq: "level" } },
+          { event: { object: { name: { _eq: "Module" } } } }
+        ]
       },
-      order_by: { createdAt: desc },
-      limit: 10
+      order_by: { amount: desc },
+      limit: 1
     ) {
       amount
-      path
-      createdAt
     }
-  }`;
+  }`,
+};
 
+async function fetchUserData(jwt) {
   try {
     const res = await fetch("https://learn.zone01oujda.ma/api/graphql-engine/v1/graphql", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + jwt,
+        Authorization: "Bearer " + jwt,
       },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify({ query: QUERIES.PROFILE }),
     });
 
     const { data } = await res.json();
+    const user = data.user[0];
+    console.log(user);
+    
+    if (!user) throw new Error("User not found");
 
     document.getElementById("user-fullname").textContent =
-      `${data.user[0].firstName} ${data.user[0].lastName}`;
+      `${user.firstName} ${user.lastName}`;
 
-    const list = document.getElementById("xp-list");
-    data.transaction.forEach((t) => {
-      const li = document.createElement("li");
-      li.textContent = `${t.amount} XP - ${t.path} (${new Date(t.createdAt).toLocaleDateString()})`;
-      list.appendChild(li);
-    });
+    document.getElementById("user-level").textContent =
+      `Level: ${data.transaction[0]?.amount || "N/A"}`;
+
+    document.getElementById("audit-ratio").textContent =
+      `Ratio: ${user.auditRatio?.toFixed(2) || "0.00"}`;
+
+    document.getElementById("audit-success").textContent =
+      `Success: ${user.audits_aggregate.aggregate.count}`;
+
+    document.getElementById("audit-fail").textContent =
+      `Fail: ${user.failed_audits.aggregate.count}`;
+
+    const groupedSkills = groupSkills(user.transactions);
+    renderSkills(groupedSkills);
 
   } catch (err) {
     console.error("Failed to fetch data:", err);
@@ -72,11 +88,28 @@ async function fetchUserData(jwt) {
     window.location.href = "index.html";
   }
 }
+
+function groupSkills(transactions) {
+  const skills = {};
+  transactions.forEach(tx => {
+    const type = tx.type;
+    const amount = tx.amount;
+    if (!skills[type]) skills[type] = 0;
+    skills[type] += amount;
+  });
+  return skills;
+}
+
 function renderSkills(skills) {
   const list = document.getElementById("skills-list");
+  list.innerHTML = "";
+
+  const total = Object.values(skills).reduce((acc, val) => acc + val, 0);
+
   Object.entries(skills).forEach(([type, amount]) => {
     const li = document.createElement("li");
-    li.textContent = `${type.replace("skill_", "")}: ${amount}`;
+    const percentage = ((amount / total) * 100).toFixed(1);
+    li.textContent = `${type.replace("skill_", "")}: ${amount} XP (${percentage}%)`;
     list.appendChild(li);
   });
 }

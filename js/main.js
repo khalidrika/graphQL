@@ -23,9 +23,11 @@ async function login() {
                 return;
             }
 
-            const jwt = (await response.text()).slice(1, length-1);
-            console.log(jwt);
+            const raw = await response.text();
+            const jwt = raw.replace(/^"|"$/g, "");
+
             localStorage.setItem("jwt", jwt);
+            
             window.location.href = "profile.html"
         })
     } catch (err) {
