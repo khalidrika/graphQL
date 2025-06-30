@@ -146,11 +146,12 @@ function processUserData(data) {
 
 function renderAuditPieChart(successCount, failCount) {
   const svg = document.getElementById("audit-pie-chart");
-  svg.innerHTML = ""; // مسح أي محتوى SVG سابق
+  svg.innerHTML = ""; 
 
   const total = successCount + failCount;
   if (total === 0) {
-    // حالة خاصة: لا يوجد بيانات
+
+// yla ma kan t ahaja
     const noDataText = document.createElementNS("http://www.w3.org/2000/svg", "text");
     noDataText.setAttribute("x", 100);
     noDataText.setAttribute("y", 105);
@@ -196,7 +197,7 @@ function renderAuditPieChart(successCount, failCount) {
     return path;
   }
 
-  // النص في المركز
+// lkatba lwast
   const centerText = document.createElementNS("http://www.w3.org/2000/svg", "text");
   centerText.setAttribute("x", cx);
   centerText.setAttribute("y", cy + 5);
@@ -205,11 +206,11 @@ function renderAuditPieChart(successCount, failCount) {
   centerText.setAttribute("fill", "#333");
   centerText.textContent = `${Math.round(successPercent * 100)}% Success`;
 
-  // القطعتين
+  //2 pc
   const successArc = describeArc(0, successAngle, "#4caf50");
   const failArc = describeArc(successAngle, 360, "#f44336");
 
-  // التفاعل
+  // reiaction
   successArc.addEventListener("mouseenter", () => {
     centerText.textContent = `${Math.round(successPercent * 100)}% Success`;
   });
@@ -222,7 +223,7 @@ function renderAuditPieChart(successCount, failCount) {
     centerText.textContent = `${Math.round(successPercent * 100)}% Success`;
   });
 
-  // الترتيب مهم: الرسم أولاً، النص فوقه
+  // tartib 
   svg.appendChild(successArc);
   svg.appendChild(failArc);
   svg.appendChild(centerText);
