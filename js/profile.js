@@ -116,12 +116,15 @@ function processUserData(data) {
   document.getElementById("audit-fail").textContent += user.failed_audits.aggregate.count;
 
   //skills
-  const skillsList = document.getElementById("skills-list");
-  user.transactions.forEach(skill => {
-    const li = document.createElement("li");
-    li.textContent = `${skill.type.replace("skill_", "")}: ${skill.amount}`;
-    skillsList.appendChild(li);
-  });
+  // const skillsList = document.getElementById("skills-list");
+  // user.transactions.forEach(skill => {
+  //   const li = document.createElement("li");
+  //   li.textContent = `${skill.type.replace("skill_", "")}: ${skill.amount}`;
+  //   skillsList.appendChild(li);
+  // });
+
+  renderSkillsBarChart(user.transactions);
+
 
   //progects
   const xpList = document.getElementById("recent-xp-list");
@@ -129,5 +132,207 @@ function processUserData(data) {
     const li = document.createElement("li");
     li.textContent = `${tx.amount} XP from ${tx.path}`;
     xpList.appendChild(li);
+  });
+
+  //svg
+  renderAuditPieChart(
+    user.audits_aggregate.aggregate.count,
+    user.failed_audits.aggregate.count
+  );
+  renderXpBarChart(data.userXp);
+
+
+}
+
+function renderAuditPieChart(successCount, failCount) {
+  const svg = document.getElementById("audit-pie-chart");
+  svg.innerHTML = ""; // مسح أي محتوى SVG سابق
+
+  const total = successCount + failCount;
+  if (total === 0) {
+    // حالة خاصة: لا يوجد بيانات
+    const noDataText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    noDataText.setAttribute("x", 100);
+    noDataText.setAttribute("y", 105);
+    noDataText.setAttribute("text-anchor", "middle");
+    noDataText.setAttribute("font-size", "16");
+    noDataText.setAttribute("fill", "#999");
+    noDataText.textContent = "No audit data";
+    svg.appendChild(noDataText);
+    return;
+  }
+
+  const radius = 90;
+  const cx = 100;
+  const cy = 100;
+
+  const successPercent = successCount / total;
+  const failPercent = failCount / total;
+  const successAngle = successPercent * 360;
+
+  function polarToCartesian(cx, cy, r, angleInDegrees) {
+    const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+    return {
+      x: cx + r * Math.cos(angleInRadians),
+      y: cy + r * Math.sin(angleInRadians)
+    };
+  }
+
+  function describeArc(startAngle, endAngle, color) {
+    const start = polarToCartesian(cx, cy, radius, endAngle);
+    const end = polarToCartesian(cx, cy, radius, startAngle);
+    const largeArc = endAngle - startAngle > 180 ? "1" : "0";
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    const d = [
+      "M", cx, cy,
+      "L", start.x, start.y,
+      "A", radius, radius, 0, largeArc, 0, end.x, end.y,
+      "Z"
+    ].join(" ");
+
+    path.setAttribute("d", d);
+    path.setAttribute("fill", color);
+    return path;
+  }
+
+  // النص في المركز
+  const centerText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  centerText.setAttribute("x", cx);
+  centerText.setAttribute("y", cy + 5);
+  centerText.setAttribute("text-anchor", "middle");
+  centerText.setAttribute("font-size", "18");
+  centerText.setAttribute("fill", "#333");
+  centerText.textContent = `${Math.round(successPercent * 100)}% Success`;
+
+  // القطعتين
+  const successArc = describeArc(0, successAngle, "#4caf50");
+  const failArc = describeArc(successAngle, 360, "#f44336");
+
+  // التفاعل
+  successArc.addEventListener("mouseenter", () => {
+    centerText.textContent = `${Math.round(successPercent * 100)}% Success`;
+  });
+
+  failArc.addEventListener("mouseenter", () => {
+    centerText.textContent = `${Math.round(failPercent * 100)}% Fail`;
+  });
+
+  svg.addEventListener("mouseleave", () => {
+    centerText.textContent = `${Math.round(successPercent * 100)}% Success`;
+  });
+
+  // الترتيب مهم: الرسم أولاً، النص فوقه
+  svg.appendChild(successArc);
+  svg.appendChild(failArc);
+  svg.appendChild(centerText);
+}
+
+
+function renderXpBarChart(xpData) {
+  const svg = document.getElementById("xp-bar-chart");
+  svg.innerHTML = "";
+
+  if (!xpData.length) {
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", 300);
+    text.setAttribute("y", 150);
+    text.setAttribute("text-anchor", "middle");
+    text.textContent = "No XP data";
+    svg.appendChild(text);
+    return;
+  }
+
+  const width = 600;
+  const height = 300;
+  const padding = 40;
+  const barWidth = (width - 2 * padding) / xpData.length;
+
+  const maxXP = Math.max(...xpData.map(x => x.amount));
+
+  xpData.forEach((entry, index) => {
+    const x = padding + index * barWidth;
+    const barHeight = (entry.amount / maxXP) * (height - 2 * padding);
+    const y = height - padding - barHeight;
+
+    const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    bar.setAttribute("x", x);
+    bar.setAttribute("y", y);
+    bar.setAttribute("width", barWidth - 5); // 5px gap
+    bar.setAttribute("height", barHeight);
+    bar.setAttribute("fill", "#2196f3");
+
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("x", x + barWidth / 2 - 5);
+    label.setAttribute("y", height - 10);
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("font-size", "10");
+    label.textContent = new Date(entry.createdAt).toLocaleDateString('en-GB');
+
+    const valueText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    valueText.setAttribute("x", x + barWidth / 2 - 5);
+    valueText.setAttribute("y", y - 5);
+    valueText.setAttribute("text-anchor", "middle");
+    valueText.setAttribute("font-size", "10");
+    valueText.textContent = entry.amount;
+
+    svg.appendChild(bar);
+    svg.appendChild(label);
+    svg.appendChild(valueText);
+  });
+}
+
+
+function renderSkillsBarChart(skills) {
+  const svg = document.getElementById("skills-bar-chart");
+  svg.innerHTML = "";
+
+  if (!skills.length) {
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", 300);
+    text.setAttribute("y", 150);
+    text.setAttribute("text-anchor", "middle");
+    text.textContent = "No skills data";
+    svg.appendChild(text);
+    return;
+  }
+
+  const width = 600;
+  const height = 300;
+  const padding = 40;
+  const barWidth = (width - 2 * padding) / skills.length;
+
+  const maxSkill = Math.max(...skills.map(s => s.amount));
+
+  skills.forEach((skill, index) => {
+    const skillName = skill.type.replace("skill_", "");
+    const x = padding + index * barWidth;
+    const barHeight = (skill.amount / maxSkill) * (height - 2 * padding);
+    const y = height - padding - barHeight;
+
+    const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    bar.setAttribute("x", x);
+    bar.setAttribute("y", y);
+    bar.setAttribute("width", barWidth - 5);
+    bar.setAttribute("height", barHeight);
+    bar.setAttribute("fill", "#673ab7");
+
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("x", x + barWidth / 2 - 5);
+    label.setAttribute("y", height - 10);
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("font-size", "10");
+    label.textContent = skillName;
+
+    const value = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    value.setAttribute("x", x + barWidth / 2 - 5);
+    value.setAttribute("y", y - 5);
+    value.setAttribute("text-anchor", "middle");
+    value.setAttribute("font-size", "10");
+    value.textContent = skill.amount;
+
+    svg.appendChild(bar);
+    svg.appendChild(label);
+    svg.appendChild(value);
   });
 }
