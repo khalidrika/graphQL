@@ -1,37 +1,38 @@
-document.addEventListener("DOMContentLoaded", async (e) => {
-    login();
-})
+document.addEventListener("DOMContentLoaded", () => {
+    const form = document.querySelector(".login");
+    form.addEventListener("submit", handleLogin);
+});
 
-async function login() {
+async function handleLogin(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const identifier = formData.get("identifier").trim();
+    const password = formData.get("password");
+
+    if (!identifier || !password) {
+        alert("Please fill in both fields.");
+        return;
+    }
+
     try {
-        document.querySelector(".login").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const identifier = formData.get("identifier");
-            const password = formData.get("password");
-            const credentials = btoa(`${identifier}:${password}`);
+        const credentials = btoa(`${identifier}:${password}`);
+        const response = await fetch("https://learn.zone01oujda.ma/api/auth/signin", {
+            method: "POST",
+            headers: {
+                "Authorization": `Basic ${credentials}`,
+            },
+        });
 
-            let response = await fetch("https://learn.zone01oujda.ma/api/auth/signin", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Basic ${credentials}`,
-                },
-            })
+        if (!response.ok) {
+            alert("Invalid credentials. Please try again.");
+            return;
+        }
 
-            if (!response.ok) {
-                alert("Invalid credentials. please try again.");
-                return;
-            }
-
-            const raw = await response.text();
-            const jwt = raw.replace(/^"|"$/g, "");
-
-            localStorage.setItem("jwt", jwt);
-            
-            window.location.href = "profile.html"
-        })
+        const jwt = (await response.text()).replace(/^"|"$/g, "");
+        localStorage.setItem("jwt", jwt);
+        window.location.href = "profile.html";
     } catch (err) {
-        console.log("login error:", err);
+        console.error("Login error:", err);
         alert("An error occurred. Please try again.");
     }
 }

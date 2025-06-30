@@ -27,7 +27,8 @@ usernameInput.addEventListener('blur', () => {
 //     face.style.setProperty('--rotate-head', `${-length}deg`);
 // });
 
-showPasswordButton.addEventListener('click', () => {
+showPasswordButton.addEventListener('click', (e) => {
+    e.preventDefault();
     const type = passwordInput.type === 'text' ? 'password' : 'text';
     passwordInput.type = type;
     document.querySelectorAll('.hand').forEach(hand => {
