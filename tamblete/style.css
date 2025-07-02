@@ -9,7 +9,7 @@
 body {
     width: 100vw;
     height: 100vh;
-    background-color: #e0e0e0;
+    background-color: #fff3d4;
     overflow: hidden;
     font-size: 12px;
 }
@@ -36,7 +36,7 @@ body {
     border-radius: 3px;
     transform: translate(-50%, -50%);
     overflow: hidden;
-    background-image: linear-gradient(to top right, #f9a743, #f9db5f);
+    background-image: linear-gradient(to top right, #f5a749, #eed262);
 }
 
 .center .ear {
@@ -235,7 +235,7 @@ svg.smile {
     height: 18px;
     border-radius: 50%;
     border: 2px solid var(--dark-blue);
-    background-color: #fac555;
+    background-color: #f8b13e;
     z-index: -1;
 }
 

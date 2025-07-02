@@ -1,11 +1,13 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", (f) => {
+  f.preventDefault();
   const jwt = localStorage.getItem("jwt");
   if (!jwt) {
     window.location.href = "index.html";
     return;
   }
 
-  document.getElementById("logout").addEventListener("click", () => {
+  document.getElementById("logout").addEventListener("click", (e) => {
+    e.preventDefault();
     localStorage.removeItem("jwt");
     window.location.href = "index.html";
   });
@@ -16,8 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-const QUERIES = {
-  PROFILE: `{
+const QUERIES = 
+   `{
     user(limit: 1) {
       firstName
       lastName
@@ -61,7 +63,7 @@ const QUERIES = {
       createdAt
     }
   }`
-};
+
 
 async function fetchUserData(jwt) {
   try {
@@ -71,7 +73,7 @@ async function fetchUserData(jwt) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${jwt}`,
       },
-      body: JSON.stringify({ query: QUERIES.PROFILE }),
+      body: JSON.stringify({ query: QUERIES }),
     });
 
     if (!response.ok) {
@@ -102,6 +104,8 @@ async function fetchUserData(jwt) {
 
 function processUserData(data) {
   const user = data.user[0];
+  console.log(user.transactions);
+  
   const level = data.userLevl?.[0]?.amount ?? "Unknown";
 
   //full name
@@ -115,24 +119,11 @@ function processUserData(data) {
   document.getElementById("audit-success").textContent += user.audits_aggregate.aggregate.count;
   document.getElementById("audit-fail").textContent += user.failed_audits.aggregate.count;
 
-  //skills
-  // const skillsList = document.getElementById("skills-list");
-  // user.transactions.forEach(skill => {
-  //   const li = document.createElement("li");
-  //   li.textContent = `${skill.type.replace("skill_", "")}: ${skill.amount}`;
-  //   skillsList.appendChild(li);
-  // });
-
-  renderSkillsBarChart(user.transactions);
+  const skills = Sort(user.transactions) 
+  renderSkillsBarChart(skills );
 
 
   //progects
-  const xpList = document.getElementById("recent-xp-list");
-  data.userXp.forEach(tx => {
-    const li = document.createElement("li");
-    li.textContent = `${tx.amount} XP from ${tx.path}`;
-    xpList.appendChild(li);
-  });
 
   //svg
   renderAuditPieChart(
@@ -250,26 +241,29 @@ function renderXpBarChart(xpData) {
   const barWidth = (width - 2 * padding) / xpData.length;
 
   const maxXP = Math.max(...xpData.map(x => x.amount));
-
+  
   xpData.forEach((entry, index) => {
     const x = padding + index * barWidth;
     const barHeight = (entry.amount / maxXP) * (height - 2 * padding);
     const y = height - padding - barHeight;
-
+    
     const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect");
     bar.setAttribute("x", x);
     bar.setAttribute("y", y);
     bar.setAttribute("width", barWidth - 5); // 5px gap
     bar.setAttribute("height", barHeight);
     bar.setAttribute("fill", "#2196f3");
-
+    
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("x", x + barWidth / 2 - 5);
     label.setAttribute("y", height - 10);
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("font-size", "10");
     label.textContent = new Date(entry.createdAt).toLocaleDateString('en-GB');
-
+    
+    const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    title.textContent = xpData[index].path.slice(14, 50)
+   
     const valueText = document.createElementNS("http://www.w3.org/2000/svg", "text");
     valueText.setAttribute("x", x + barWidth / 2 - 5);
     valueText.setAttribute("y", y - 5);
@@ -277,12 +271,12 @@ function renderXpBarChart(xpData) {
     valueText.setAttribute("font-size", "10");
     valueText.textContent = entry.amount;
 
+    bar.append(title)
     svg.appendChild(bar);
     svg.appendChild(label);
     svg.appendChild(valueText);
   });
 }
-
 
 function renderSkillsBarChart(skills) {
   const svg = document.getElementById("skills-bar-chart");
@@ -336,4 +330,20 @@ function renderSkillsBarChart(skills) {
     svg.appendChild(label);
     svg.appendChild(value);
   });
+}
+
+
+function Sort(data) {
+  const typeMap = {};
+
+  for (let i = 0; i < data.length; i++) {
+    const item = data[i];
+    const currentType = item.type;
+
+    if (!typeMap[currentType] || item.amount > typeMap[currentType].amount) {
+      typeMap[currentType] = item;
+    }
+  }
+
+  return Object.values(typeMap);
 }

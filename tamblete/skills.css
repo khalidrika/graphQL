@@ -1,1 +1,79 @@
-  
+:root {
+  --dark-blue: #243946;
+  --main-bg: #fff3d4;
+  --accent: #f5a749;
+  --accent2: #eed262;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  background-color: var(--main-bg);
+  color: var(--dark-blue);
+  padding: 20px;
+}
+
+header {
+  background-image: linear-gradient(to right, var(--accent), var(--accent2));
+  padding: 15px 20px;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+header p {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.logout {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: var(--dark-blue);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.logout:hover {
+  background-color: #16222b;
+}
+
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  display: grid;
+  gap: 30px;
+}
+
+section {
+  background-color: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+section h2 {
+  margin-bottom: 15px;
+  color: var(--dark-blue);
+}
+
+#skills-bar-chart,
+#xp-bar-chart,
+#audit-pie-chart {
+  display: block;
+  margin: 0 auto;
+}
+
+#audit-section p {
+  margin: 5px 0;
+  font-weight: bold;
+}
