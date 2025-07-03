@@ -18,8 +18,8 @@ document.addEventListener("DOMContentLoaded", (f) => {
   });
 });
 
-const QUERIES = 
-   `{
+const QUERIES =
+  `{
     user(limit: 1) {
       firstName
       lastName
@@ -98,6 +98,8 @@ async function fetchUserData(jwt) {
       stack: error.stack,
       name: error.name
     });
+    localStorage.removeItem("jwt");
+    window.location.href = "index.html";
     throw new Error("Failed to fetch user profile. Please check console for details.");
   }
 }
@@ -105,7 +107,7 @@ async function fetchUserData(jwt) {
 function processUserData(data) {
   const user = data.user[0];
   console.log(user.transactions);
-  
+
   const level = data.userLevl?.[0]?.amount ?? "Unknown";
 
   //full name
@@ -119,8 +121,8 @@ function processUserData(data) {
   document.getElementById("audit-success").textContent += user.audits_aggregate.aggregate.count;
   document.getElementById("audit-fail").textContent += user.failed_audits.aggregate.count;
 
-  const skills = Sort(user.transactions) 
-  renderSkillsBarChart(skills );
+  const skills = Sort(user.transactions)
+  renderSkillsBarChart(skills);
 
 
   //progects
@@ -137,12 +139,12 @@ function processUserData(data) {
 
 function renderAuditPieChart(successCount, failCount) {
   const svg = document.getElementById("audit-pie-chart");
-  svg.innerHTML = ""; 
+  svg.innerHTML = "";
 
   const total = successCount + failCount;
   if (total === 0) {
 
-// yla ma kan t ahaja
+    // yla ma kan t ahaja
     const noDataText = document.createElementNS("http://www.w3.org/2000/svg", "text");
     noDataText.setAttribute("x", 100);
     noDataText.setAttribute("y", 105);
@@ -188,7 +190,7 @@ function renderAuditPieChart(successCount, failCount) {
     return path;
   }
 
-// lkatba lwast
+  // lkatba lwast
   const centerText = document.createElementNS("http://www.w3.org/2000/svg", "text");
   centerText.setAttribute("x", cx);
   centerText.setAttribute("y", cy + 5);
@@ -241,29 +243,29 @@ function renderXpBarChart(xpData) {
   const barWidth = (width - 2 * padding) / xpData.length;
 
   const maxXP = Math.max(...xpData.map(x => x.amount));
-  
+
   xpData.forEach((entry, index) => {
     const x = padding + index * barWidth;
     const barHeight = (entry.amount / maxXP) * (height - 2 * padding);
     const y = height - padding - barHeight;
-    
+
     const bar = document.createElementNS("http://www.w3.org/2000/svg", "rect");
     bar.setAttribute("x", x);
     bar.setAttribute("y", y);
     bar.setAttribute("width", barWidth - 5); // 5px gap
     bar.setAttribute("height", barHeight);
     bar.setAttribute("fill", "#2196f3");
-    
+
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("x", x + barWidth / 2 - 5);
     label.setAttribute("y", height - 10);
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("font-size", "10");
     label.textContent = new Date(entry.createdAt).toLocaleDateString('en-GB');
-    
+
     const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
     title.textContent = xpData[index].path.slice(14, 50)
-   
+
     const valueText = document.createElementNS("http://www.w3.org/2000/svg", "text");
     valueText.setAttribute("x", x + barWidth / 2 - 5);
     valueText.setAttribute("y", y - 5);
