@@ -98,8 +98,8 @@ async function fetchUserData(jwt) {
       stack: error.stack,
       name: error.name
     });
-    localStorage.removeItem("jwt");
-    window.location.href = "index.html";
+    // localStorage.removeItem("jwt");
+    // window.location.href = "index.html";
     throw new Error("Failed to fetch user profile. Please check console for details.");
   }
 }
