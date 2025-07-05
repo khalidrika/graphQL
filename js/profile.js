@@ -98,15 +98,17 @@ async function fetchUserData(jwt) {
       stack: error.stack,
       name: error.name
     });
-    // localStorage.removeItem("jwt");
-    // window.location.href = "index.html";
+    if (error.message != "Failed to fetch") {
+      localStorage.removeItem("jwt");
+      window.location.href = "index.html";
+    }
     throw new Error("Failed to fetch user profile. Please check console for details.");
   }
 }
 
 function processUserData(data) {
   const user = data.user[0];
-  console.log(user.transactions);
+  // console.log(user.transactions);
 
   const level = data.userLevl?.[0]?.amount ?? "Unknown";
 
@@ -346,7 +348,7 @@ function renderSkillsBarChart(skills) {
     const value = document.createElementNS("http://www.w3.org/2000/svg", "text");
     value.setAttribute("x", x + barWidth / 2 - 5);
     value.setAttribute("y", y - 5);
-    value.setAttribute("text-anchor", "middle");  
+    value.setAttribute("text-anchor", "middle");
     value.setAttribute("font-size", "10");
     value.textContent = skill.amount;
 
