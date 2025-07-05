@@ -1,4 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const jwt = localStorage.getItem("jwt");
+    if (jwt) {
+        window.location.href = "profile.html";
+        return;
+    }
+
     const form = document.querySelector(".login");
     form.addEventListener("submit", handleLogin);
 });

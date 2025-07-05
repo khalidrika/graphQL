@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", (f) => {
 
   fetchUserData(jwt).catch(err => {
     console.error("Initial fetch error:", err);
-    alert("Failed to load profile data. Please try again later.");
+    // alert("Failed to load profile data. Please try again later.");
   });
 });
 
@@ -261,7 +261,18 @@ function renderXpBarChart(xpData) {
     label.setAttribute("y", height - 10);
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("font-size", "10");
+    label.setAttribute("opacity", "0"); // hiden
     label.textContent = new Date(entry.createdAt).toLocaleDateString('en-GB');
+
+    bar.addEventListener("mouseover", () => {
+      label.setAttribute("opacity", "1");
+    });
+    bar.addEventListener("mouseout", () => {
+      label.setAttribute("opacity", "0");
+    });
+
+
+
 
     const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
     title.textContent = xpData[index].path.slice(14, 50)
@@ -313,18 +324,29 @@ function renderSkillsBarChart(skills) {
     bar.setAttribute("width", barWidth - 5);
     bar.setAttribute("height", barHeight);
     bar.setAttribute("fill", "#673ab7");
-
+    //namee skills
     const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
     label.setAttribute("x", x + barWidth / 2 - 5);
     label.setAttribute("y", height - 10);
     label.setAttribute("text-anchor", "middle");
     label.setAttribute("font-size", "10");
+    label.setAttribute("opacity", "0"); //hesen
     label.textContent = skillName;
 
+    // hover 
+    bar.addEventListener("mouseover", () => {
+      label.setAttribute("opacity", "1");
+    });
+    bar.addEventListener("mouseout", () => {
+      label.setAttribute("opacity", "0");
+    });
+
+
+    //xp
     const value = document.createElementNS("http://www.w3.org/2000/svg", "text");
     value.setAttribute("x", x + barWidth / 2 - 5);
     value.setAttribute("y", y - 5);
-    value.setAttribute("text-anchor", "middle");
+    value.setAttribute("text-anchor", "middle");  
     value.setAttribute("font-size", "10");
     value.textContent = skill.amount;
 
